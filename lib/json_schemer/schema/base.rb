@@ -442,10 +442,19 @@ module JSONSchemer
         min_items = schema['minItems']
         unique_items = schema['uniqueItems']
         contains = schema['contains']
+        min_contains = schema['minContains']
+        max_contains = schema['maxContains']
 
         yield error(instance, 'maxItems') if max_items && data.size > max_items
         yield error(instance, 'minItems') if min_items && data.size < min_items
         yield error(instance, 'uniqueItems') if unique_items && data.size != data.uniq.size
+
+        if contains && (min_contains || max_contains)
+          contained_count = data.count { |item| valid_instance?(instance.merge(data: item, schema: contains)) }
+          yield error(instance, 'minContains') if min_contains && contained_count < min_contains
+          yield error(instance, 'maxContains') if max_contains && contained_count > max_contains
+        end
+
         yield error(instance, 'contains') if !contains.nil? && data.all? { |item| !valid_instance?(instance.merge(data: item, schema: contains)) }
 
         if items.is_a?(Array)
