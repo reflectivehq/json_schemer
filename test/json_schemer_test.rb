@@ -1050,4 +1050,52 @@ class JSONSchemerTest < Minitest::Test
     assert schema.valid?(2)
     refute schema.valid?(3)
   end
+
+  def test_it_validates_with_min_contains
+    root = {
+      "type" => "array",
+      "minContains" => 2,
+      "contains" => {
+        "type" => "number",
+        "minimum" => 3
+      }
+    }
+
+    schema = JSONSchemer.schema(root)
+
+    assert schema.valid?([1,2,3,4])
+    refute schema.valid?([1,2,3])
+  end
+
+  def test_it_validates_min_contains_default_to_1
+    root = {
+      "type" => "array",
+      "contains" => {
+        "type" => "number",
+        "minimum" => 3
+      }
+    }
+
+    schema = JSONSchemer.schema(root)
+
+    assert schema.valid?([1,2,3,])
+    refute schema.valid?([1,2,])
+  end
+
+  def test_it_validates_with_min_contains
+    root = {
+      "type" => "array",
+      "maxContains" => 2,
+      "contains" => {
+        "type" => "number",
+        "minimum" => 3
+      }
+    }
+
+    schema = JSONSchemer.schema(root)
+
+    refute schema.valid?([1,2,3,4,5])
+    assert schema.valid?([1,2,3,4])
+  end
+
 end
